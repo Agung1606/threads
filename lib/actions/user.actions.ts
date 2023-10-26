@@ -21,9 +21,8 @@ export async function updateUser({
   image,
   path,
 }: UpdateUserParams): Promise<void> {
+  connectToDB();
   try {
-    connectToDB();
-
     await User.findOneAndUpdate(
       { id: userId },
       {
@@ -54,9 +53,8 @@ export async function updateUser({
 }
 
 export async function fetchUser(userId: string) {
+  connectToDB();
   try {
-    connectToDB();
-
     const user = await User.findOne({ id: userId });
     // .populate({
     //   path: "communities",

@@ -3,6 +3,7 @@ import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import ThreadCard from "@/components/cards/ThreadCard";
+import Comment from "@/components/forms/Comment";
 
 const Page = async ({ params }: { params: { id: string } }) => {
   if (!params.id) return null;
@@ -32,7 +33,11 @@ const Page = async ({ params }: { params: { id: string } }) => {
       </div>
 
       <div className="mt-7">
-
+        <Comment
+          threadId={params.id}
+          currentUserImg={userInfo.image}
+          currentUserId={userInfo._id}
+        />
       </div>
     </section>
   );

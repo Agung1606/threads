@@ -12,15 +12,21 @@ interface CreateThreadParams {
   path: string;
 }
 
+interface AddCommentToThreadParams {
+  threadId: string;
+  commentText: string;
+  userId: string;
+  path: string;
+}
+
 export async function createThread({
   text,
   author,
   communityId,
   path,
 }: CreateThreadParams) {
+  connectToDB();
   try {
-    connectToDB();
-
     const newThread = await Thread.create({
       text,
       author,
@@ -39,9 +45,8 @@ export async function createThread({
 }
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
+  connectToDB();
   try {
-    connectToDB();
-
     // calculate the number of posts to skip
     const skipAmount = (pageNumber - 1) * pageSize;
 
@@ -76,9 +81,8 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
 }
 
 export async function fetchThreadById(id: string) {
+  connectToDB();
   try {
-    connectToDB();
-
     // TODO: populate community
     const thread = await Thread.findById(id)
       .populate({
@@ -110,5 +114,42 @@ export async function fetchThreadById(id: string) {
     return thread;
   } catch (error: any) {
     throw new Error(`Error fetching thread: ${error.message}`);
+  }
+}
+
+export async function addCommentToThread({
+  threadId,
+  commentText,
+  userId,
+  path,
+}: AddCommentToThreadParams) {
+  connectToDB();
+  try {
+    // find the original thread by its ID
+    const originalThread = await Thread.findById(threadId);
+
+    if (!originalThread) {
+      throw new Error(`Thread not found`);
+    }
+
+    // create a new thread with the comment text
+    const commentThread = new Thread({
+      text: commentText,
+      author: userId,
+      parentId: threadId,
+    });
+
+    // save the new thread
+    const savedCommentThread = await commentThread.save();
+
+    // update the original thread to include the new comment
+    originalThread.children.push(savedCommentThread._id);
+
+    // save orinal thread
+    await originalThread.save();
+
+    revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`error adding comment to thread ${error.message}`);
   }
 }
