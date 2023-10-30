@@ -25,8 +25,9 @@ export async function createThread({
   communityId,
   path,
 }: CreateThreadParams) {
-  connectToDB();
   try {
+    connectToDB();
+
     const newThread = await Thread.create({
       text,
       author,
@@ -45,8 +46,9 @@ export async function createThread({
 }
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
-  connectToDB();
   try {
+    connectToDB();
+
     // calculate the number of posts to skip
     const skipAmount = (pageNumber - 1) * pageSize;
 
@@ -67,6 +69,7 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
         },
       });
 
+    // to know the total of threads in database
     const totalPostsCount = await Thread.countDocuments({
       parentId: { $in: [null, undefined] },
     });
@@ -81,8 +84,9 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
 }
 
 export async function fetchThreadById(id: string) {
-  connectToDB();
   try {
+    connectToDB();
+
     // TODO: populate community
     const thread = await Thread.findById(id)
       .populate({
@@ -123,8 +127,9 @@ export async function addCommentToThread({
   userId,
   path,
 }: AddCommentToThreadParams) {
-  connectToDB();
   try {
+    connectToDB();
+
     // find the original thread by its ID
     const originalThread = await Thread.findById(threadId);
 
