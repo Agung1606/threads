@@ -147,3 +147,35 @@ export async function fetchUsers({
     throw new Error(`Failed to fetch users ${error.message}`);
   }
 }
+
+/*
+This function helps someone find all the comments they received on their posts from others
+on a computer. it gathers all the comments from different places, puts them together, and
+shows them to the person. if there's problem, it tells the person something went wrong.
+*/
+export async function getActivity(userId: string) {
+  try {
+    connectToDB();
+
+    // find all threads created by the user
+    const userThreads = await Thread.find({ author: userId });
+
+    // collect all the child thread ids (replies) from the 'children' field
+    const childThreadIds = userThreads.reduce((acc, userThread) => {
+      return acc.concat(userThread.children);
+    }, []);
+
+    const replies = await Thread.find({
+      _id: { $in: childThreadIds },
+      author: { $ne: userId },
+    }).populate({
+      path: "author",
+      model: User,
+      select: `name image _id`,
+    });
+
+    return replies;
+  } catch (error: any) {
+    throw new Error(`Failed to get activity ${error.message}`);
+  }
+}
