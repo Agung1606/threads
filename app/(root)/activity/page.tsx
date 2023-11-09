@@ -13,7 +13,6 @@ const Page = async () => {
 
   // get activities
   const activites = await getActivity(userInfo._id);
-  console.log(activites);
 
   return (
     <section>
